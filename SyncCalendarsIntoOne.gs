@@ -27,8 +27,11 @@ const SYNC_DAYS_IN_FUTURE = 120;
 // Default title for events that don't have a title.
 const DEFAULT_EVENT_TITLE = "That's a mystery ! 🤷🏻‍♂️";
 
-// Sync only events marked as busy (or not)
+// Sync only events marked as busy (or all). Default: false (all events)
 const SKIP_NONBUSY_EVENTS = false;
+
+// Do not sync declined events. Default: false (do sync)
+const DO_NOT_SYNC_DECLINED = false
 
 // Unique character to use in the title of the event to identify it as a clone.
 // This is used to delete the old events.
@@ -140,6 +143,11 @@ function createEvents(startTime, endTime) {
       // Don't copy "free" events.
       if (event.transparency && event.transparency === "transparent" && SKIP_NONBUSY_EVENTS) {
         return;
+      }
+
+      // Don't copy declined events.
+      if (DO_NOT_SYNC_DECLINED && event.attendees && event.attendees.find((at) => at.self) && event.attendees.find((at) => at.self)['responseStatus'] == 'declined') {
+        return
       }
 
       // If event.summary is undefined, empty, or null, set it to default title
