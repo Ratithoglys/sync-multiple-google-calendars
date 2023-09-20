@@ -23,6 +23,9 @@ const SYNC_DAYS_IN_FUTURE = 120;
 // Default title for events that don't have a title.
 const DEFAULT_EVENT_TITLE = "That's a mystery ! 🤷🏻‍♂️";
 
+// Sync only events marked as busy (or not)
+const SKIP_NONBUSY_EVENTS = false;
+
 // Unique character to use in the title of the event to identify it as a clone.
 // This is used to delete the old events.
 // https://unicode-table.com/en/200B/
@@ -129,7 +132,7 @@ function createEvents(startTime, endTime) {
 
     events.items.forEach((event) => {
       // Don't copy "free" events.
-      if (event.transparency && event.transparency === "transparent") {
+      if (event.transparency && event.transparency === "transparent" && SKIP_NONBUSY_EVENTS) {
         return;
       }
 
