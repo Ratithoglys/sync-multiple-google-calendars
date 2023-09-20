@@ -17,8 +17,8 @@ const CALENDARS_TO_MERGE = {
 const CALENDAR_TO_MERGE_INTO = "shared-calendar-id@gmail.com";
 
 // Number of days in the past and future to sync.
-const SYNC_DAYS_IN_PAST = 7;
-const SYNC_DAYS_IN_FUTURE = 30;
+const SYNC_DAYS_IN_PAST = 15;
+const SYNC_DAYS_IN_FUTURE = 120;
 
 // Default title for events that don't have a title.
 const DEFAULT_EVENT_TITLE = "That's a mystery ! 🤷🏻‍♂️";
@@ -55,11 +55,12 @@ function SyncCalendarsIntoOne() {
   endTime.setDate(endTime.getDate() + SYNC_DAYS_IN_FUTURE + 1);
 
   // Delete any old events that have been already cloned over.
-  const deleteStartTime = new Date();
-  deleteStartTime.setFullYear(2000, 01, 01);
-  deleteStartTime.setHours(0, 0, 0, 0);
+  //const deleteStartTime = new Date();
+  //deleteStartTime.setFullYear(2000, 01, 01);
+  //deleteStartTime.setHours(0, 0, 0, 0);
 
-  deleteEvents(deleteStartTime, endTime);
+  //deleteEvents(deleteStartTime, endTime)
+  deleteEvents(startTime, endTime);
   createEvents(startTime, endTime);
 
   // Remove execution semaphore
