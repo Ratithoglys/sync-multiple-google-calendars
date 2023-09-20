@@ -20,30 +20,34 @@ const CALENDARS_TO_MERGE = {
 // The ID of the merged calendar
 const CALENDAR_TO_MERGE_INTO = "shared-calendar-id@gmail.com";
 
+// ----------------------------------------------------------------------------
+// ONLY NECESSARY ON FIRST EXEC
+// ----------------------------------------------------------------------------
+
 // Number of days in the past and future to sync.
-const SYNC_DAYS_IN_PAST = 15;
-const SYNC_DAYS_IN_FUTURE = 120;
+var SYNC_DAYS_IN_PAST = 10;
+var SYNC_DAYS_IN_FUTURE = 15;
 
 // Default title for events that don't have a title.
-const DEFAULT_EVENT_TITLE = "That's a mystery ! 🤷🏻‍♂️";
+var DEFAULT_EVENT_TITLE = "That's a mystery ! 🤷🏻‍♂️";
 
 // Sync only events marked as busy (or all). Default: false (all events)
-const SKIP_NONBUSY_EVENTS = false;
+var SKIP_NONBUSY_EVENTS = false;
 
 // Do not sync declined events. Default: false (do sync)
-const DO_NOT_SYNC_DECLINED = false
+var DO_NOT_SYNC_DECLINED = false
+
+// ----------------------------------------------------------------------------
+// MAIN LOGIC
+// ----------------------------------------------------------------------------
+
+// Base endpoint for the calendar API
+const ENDPOINT_BASE = "https://www.googleapis.com/calendar/v3/calendars";
 
 // Unique character to use in the title of the event to identify it as a clone.
 // This is used to delete the old events.
 // https://unicode-table.com/en/200B/
 const SEARCH_CHARACTER = "\u200B";
-
-// ----------------------------------------------------------------------------
-// DO NOT TOUCH FROM HERE ON
-// ----------------------------------------------------------------------------
-
-// Base endpoint for the calendar API
-const ENDPOINT_BASE = "https://www.googleapis.com/calendar/v3/calendars";
 
 function SyncCalendarsIntoOne() {
   // Execution semaphore - https://stackoverflow.com/questions/67066779/how-to-prevent-google-apps-script-trigger-if-a-function-is-already-running
@@ -53,6 +57,8 @@ function SyncCalendarsIntoOne() {
     // If this is true then another instance of this function is running which means that you dont want this instance of this function to run - so quit
     return;
   }
+
+  checkProperties();
 
   // Start time is today at midnight - SYNC_DAYS_IN_PAST
   const startTime = new Date();
@@ -69,7 +75,6 @@ function SyncCalendarsIntoOne() {
   //deleteStartTime.setFullYear(2000, 01, 01);
   //deleteStartTime.setHours(0, 0, 0, 0);
 
-  //deleteEvents(deleteStartTime, endTime)
   deleteEvents(startTime, endTime);
   createEvents(startTime, endTime);
 
@@ -185,4 +190,23 @@ function createEvents(startTime, endTime) {
   } else {
     console.log("No events to create.");
   }
+}
+
+function checkProperties() {
+  SYNC_DAYS_IN_PAST     = checkProperty('SYNC_DAYS_IN_PAST', SYNC_DAYS_IN_PAST);
+  SYNC_DAYS_IN_FUTURE   = checkProperty('SYNC_DAYS_IN_FUTURE', SYNC_DAYS_IN_FUTURE);
+  DEFAULT_EVENT_TITLE   = checkProperty('DEFAULT_EVENT_TITLE', DEFAULT_EVENT_TITLE);
+  SKIP_NONBUSY_EVENTS   = (checkProperty('SKIP_NONBUSY_EVENTS', SKIP_NONBUSY_EVENTS) === 'true');
+  DO_NOT_SYNC_DECLINED  = (checkProperty('DO_NOT_SYNC_DECLINED', DO_NOT_SYNC_DECLINED) === 'true');
+}
+
+function checkProperty(prop, val) {
+  props = PropertiesService.getScriptProperties();
+
+  if (props.getProperty(prop) == null) {
+    Logger.log(`${prop} unavailable, setting to ${val}`)
+    props.setProperty(prop, val)
+  }
+
+  return props.getProperty(prop);
 }
