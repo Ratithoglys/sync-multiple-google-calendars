@@ -29,6 +29,14 @@ const SEARCH_CHARACTER = "\u200B"
 const ENDPOINT_BASE = "https://www.googleapis.com/calendar/v3/calendars"
 
 function SyncCalendarsIntoOne() {
+  // Execution semaphore - https://stackoverflow.com/questions/67066779/how-to-prevent-google-apps-script-trigger-if-a-function-is-already-running
+  var isItRunning;
+  isItRunning = CacheService.getScriptCache().put("itzRunning", "true", 90); //Keep this value in Cache for up to X minutes
+  if (isItRunning) {
+    // If this is true then another instance of this function is running which means that you dont want this instance of this function to run - so quit
+    return;
+  }
+
   // Start time is today at midnight - SYNC_DAYS_IN_PAST
   const startTime = new Date()
   startTime.setHours(0, 0, 0, 0)
@@ -46,6 +54,9 @@ function SyncCalendarsIntoOne() {
 
   deleteEvents(deleteStartTime, endTime)
   createEvents(startTime, endTime)
+
+  // Remove execution semaphore
+  CacheService.getScriptCache().remove("itzRunning");
 }
 
 // Delete any old events that have been already cloned over.
