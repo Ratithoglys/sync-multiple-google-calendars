@@ -6,11 +6,15 @@
 // ----------------------------------------------------------------------------
 
 // Calendars to merge from.
-// "[X]" is what is placed in front of your calendar event in the shared calendar.
-// Use "" if you want none.
+// Name       is just for show
+// id         is the calendar id found in calendar settings
+// prefix     is a string to prepend for all events of this calendar
+// color_id   is the default color for each events of this calendar, don't specify a color to use the default color
+//    0=default, 1=blue, 2=green, 3=purple, 4=red, 5=yellow, 6=orange, 
+//    7=turquoise, 8=gray, 9=bold blue, 10=bold green, 11=bold red
 const CALENDARS_TO_MERGE = {
-  "[Personal]": "calendar-id@gmail.com",
-  "[Work]": "calendar-id@gmail.com",
+  "General": {'id': "calendar-id@gmail.com", 'prefix': "", 'color_id': '2'},
+  "Work": {'id': "calendar-id@gmail.com", 'prefix': "[WK]", 'color_id': '5'},
 }
 
 // The ID of the merged calendar
@@ -108,8 +112,10 @@ function deleteEvents(startTime, endTime) {
 function createEvents(startTime, endTime) {
   let requestBody = [];
 
-  for (let calendarName in CALENDARS_TO_MERGE) {
-    const calendarId = CALENDARS_TO_MERGE[calendarName];
+  for (const [calendarName, calendarOption] of Object.entries(CALENDARS_TO_MERGE)) {
+    const calendarId = calendarOption.id;
+    const calendarPrefix = calendarOption.prefix;
+    const calendarColorId = calendarOption.color_id || '0';
     const calendarToCopy = CalendarApp.getCalendarById(calendarId);
 
     if (!calendarToCopy) {
@@ -145,11 +151,12 @@ function createEvents(startTime, endTime) {
         method: "POST",
         endpoint: `${ENDPOINT_BASE}/${CALENDAR_TO_MERGE_INTO}/events?conferenceDataVersion=1`,
         requestBody: {
-          summary: `${SEARCH_CHARACTER}${calendarName} ${event.summary}`,
+          summary: `${SEARCH_CHARACTER}${calendarPrefix} ${event.summary}`,
           location: event.location,
           description: event.description,
           start: event.start,
           end: event.end,
+          colorId: calendarColorId,
           conferenceData: event.conferenceData,
         },
       });
